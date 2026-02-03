@@ -139,8 +139,6 @@
             connectedCallback() {
                 this.render();
                 this.setupListeners();
-                // We do NOT emit initial default values automatically anymore. 
-                // User must click Configure.
             }
 
             render() {
@@ -178,7 +176,8 @@
                         <!-- Interest & Compounding - Responsive Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">Annual Rate (%)</label>
+                                <!-- Label updated to be generic since behavior changes based on compounding -->
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Interest Rate (%)</label>
                                 <div class="relative rounded-lg shadow-sm">
                                     <input type="number" id="interest" value="8" class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none sm:text-sm transition-all" placeholder="8.5">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -263,10 +262,9 @@
             }
 
             setupListeners() {
-                // Changed: Listen for click on button instead of live input changes
                 const btn = this.querySelector('#calcBtn');
                 btn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent form submission if inside a form tag behavior
+                    e.preventDefault(); 
                     this.emitChange();
                 });
             }
@@ -315,11 +313,14 @@
                     <!-- Interest -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between relative overflow-hidden transition-transform duration-300 hover:scale-[1.02]">
                         <div class="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-green-100 rounded-full blur-xl opacity-50 pointer-events-none"></div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-green-50 rounded-lg">
-                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="p-1.5 bg-green-50 rounded-lg">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                                </div>
+                                <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Interest</span>
                             </div>
-                            <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Interest</span>
+                            <span class="text-[10px] font-medium px-2 py-1 bg-green-50 text-green-700 rounded-full border border-green-100">Duration: ${data.totalMonths} Mo</span>
                         </div>
                         <div class="text-2xl font-bold text-green-600">
                             +${formatCurrency(data.totalInterest, data.currencyCode)}
@@ -476,18 +477,15 @@
                     const x = e.clientX - rect.left;
                     const width = rect.width;
                     
-                    // Calculate index based on mouse position (0 to 1 ratio)
                     const ratio = Math.max(0, Math.min(1, x / width));
                     const index = Math.floor(ratio * (monthlyData.length - 1));
                     
                     const point = monthlyData[index];
                     if (point) {
-                        // Update Info Box
                         infoDate.textContent = point.dateLabel;
                         infoBalance.textContent = formatCurrency(point.balance, this.currentData.currencyCode);
                         infoGain.textContent = `+${formatDecimalCurrency(point.monthlyInterest, this.currentData.currencyCode)} (Mo. Growth)`;
                         
-                        // Move Guide Line (Map pixel x back to SVG coordinate 0-500)
                         const svgX = ratio * 500;
                         guideLine.setAttribute('x1', svgX);
                         guideLine.setAttribute('x2', svgX);
@@ -575,54 +573,56 @@
             }
 
             const principal = Number(amount);
-            const annualRate = Number(interest) / 100;
+            // Algorithm Step 1: Set r = rate_pct / 100
+            const rate_decimal = Number(interest) / 100;
             const compoundingFreq = Number(compounding) || 12; 
             
-            const startDate = new Date(Number(startYear), Number(startMonth));
-            const endDate = new Date(Number(endYear), Number(endMonth));
-            
-            let totalMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12;
-            totalMonths -= startDate.getMonth();
-            totalMonths += endDate.getMonth();
+            const totalMonths = (parseInt(endYear) - parseInt(startYear)) * 12 + (parseInt(endMonth) - parseInt(startMonth));
 
             if (totalMonths <= 0) {
                 showError();
                 return;
             }
 
-            // --- Enhanced Monthly Calculation Loop ---
             const monthlyData = [];
             const yearlyBreakdown = [];
             
-            let currentBalance = principal;
-            const monthlyRate = annualRate / compoundingFreq; 
-            
-            let currentDate = new Date(startDate);
-
-            // Track year data for the table
+            let currentDate = new Date(parseInt(startYear), parseInt(startMonth));
             let yearStartBalance = principal;
             let yearInterestAcc = 0;
-            let lastYear = currentDate.getFullYear();
+            let finalAmount = principal;
+            let prevBalance = principal;
+
+            // --- Formula-Based Calculation Loop ---
+            // Using explicit Formula: A = P * (1 + r)^n for every step to generate graph data
+            // r = rate_decimal (for monthly) or rate_decimal (for annual)
+            // n = totalMonths (for monthly) or totalMonths/12 (for annual)
 
             for (let i = 1; i <= totalMonths; i++) {
-                // Determine if interest is applied this month
-                let interestApplied = 0;
                 
+                let currentBalance;
+
                 if (compoundingFreq === 12) {
-                    // Monthly Compounding
-                    interestApplied = currentBalance * (annualRate / 12);
+                    // Algorithm 1: Monthly Compounding
+                    // Formula: P * (1 + r)^n
+                    // Here: r = rate_decimal (User said "Annual rate per month" implies this is the periodic rate)
+                    // n = i
+                    currentBalance = principal * Math.pow(1 + rate_decimal, i);
                 } else {
-                    // Annual: apply only on 12th month relative to loop
-                    if (i % 12 === 0) {
-                        interestApplied = currentBalance * annualRate; 
-                    }
+                    // Algorithm 2: Annual Compounding
+                    // Formula: P * (1 + R)^years
+                    // Here: R = rate_decimal
+                    // years = i / 12
+                    currentBalance = principal * Math.pow(1 + rate_decimal, i / 12);
                 }
 
-                const prevBalance = currentBalance;
-                currentBalance += interestApplied;
-                yearInterestAcc += interestApplied;
+                // Determine increase just for this month (for the graph tooltip)
+                const monthlyInterest = currentBalance - prevBalance;
+                yearInterestAcc += monthlyInterest;
+                prevBalance = currentBalance;
+                finalAmount = currentBalance;
 
-                // Advance Date for Label
+                // Labeling
                 currentDate.setMonth(currentDate.getMonth() + 1);
                 const label = `${monthsNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
 
@@ -630,21 +630,18 @@
                     monthIndex: i,
                     dateLabel: label,
                     balance: currentBalance,
-                    monthlyInterest: interestApplied // This satisfies the user request
+                    monthlyInterest: monthlyInterest 
                 });
 
-                // Check for Year End or Final Month for Table Breakdown
+                // Year End Logic
                 const currentYr = currentDate.getFullYear();
                 if (i % 12 === 0 || i === totalMonths) {
-                    // Add row to yearly table
                      yearlyBreakdown.push({
-                        yearLabel: currentYr,
+                        yearLabel: `Year ${Math.ceil(i/12)} (${currentYr})`,
                         openingBalance: yearStartBalance,
                         interestEarned: yearInterestAcc,
                         closingBalance: currentBalance
                     });
-                    
-                    // Reset for next year
                     yearStartBalance = currentBalance;
                     yearInterestAcc = 0;
                 }
@@ -652,14 +649,15 @@
 
             const result = {
                 principal,
-                totalInterest: currentBalance - principal,
-                totalAmount: currentBalance,
+                totalInterest: finalAmount - principal,
+                totalAmount: finalAmount,
                 years: Math.floor(totalMonths / 12),
                 months: totalMonths % 12,
-                startYear: startDate.getFullYear(),
-                endYear: endDate.getFullYear(),
+                totalMonths: totalMonths,
+                startYear: startYear,
+                endYear: endYear,
                 breakdown: yearlyBreakdown,
-                monthlyData: monthlyData, // New data source for graph
+                monthlyData: monthlyData,
                 currencyCode: currency
             };
 
