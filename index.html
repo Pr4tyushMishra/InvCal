@@ -11,22 +11,13 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.4s ease-out forwards',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Custom scrollbar matching original design */
+        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f8fafc; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; border: 2px solid #f8fafc; }
@@ -58,7 +49,7 @@
                 <app-config-form id="configForm"></app-config-form>
                 
                 <!-- Error State Container -->
-                <div id="errorContainer" class="hidden bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg animate-fade-in">
+                <div id="errorContainer" class="hidden bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
                     <div class="flex items-start">
                         <svg class="h-5 w-5 text-red-400 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -73,7 +64,7 @@
             <!-- Column 2: Results -->
             <div class="md:col-span-8 lg:col-span-8 space-y-6">
                 <!-- Wrapper for successful results -->
-                <div id="resultsContainer" class="hidden space-y-6 animate-fade-in">
+                <div id="resultsContainer" class="hidden space-y-6">
                     <!-- 3. Summary Cards Component Instance -->
                     <app-summary-cards id="summaryCards"></app-summary-cards>
                     <!-- 4. Visuals Component Instance -->
@@ -83,15 +74,15 @@
                 </div>
 
                 <!-- Empty State -->
-                <div id="emptyState" class="h-full flex items-center justify-center min-h-[500px] bg-white rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center animate-fade-in">
+                <div id="emptyState" class="h-full flex items-center justify-center min-h-[400px] bg-white rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center">
                     <div class="max-w-sm">
-                        <div class="mx-auto h-20 w-20 bg-indigo-50 text-indigo-400 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="mx-auto h-16 w-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4">
+                             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                              </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-slate-900 mb-2">Visuals Awaiting Data</h3>
-                        <p class="text-slate-500">Configure your investment parameters on the left and click <strong>Configure</strong> to generate charts.</p>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">Enter Details</h3>
+                        <p class="text-sm text-slate-500">Configure your investment parameters on the left to see projections.</p>
                     </div>
                 </div>
             </div>
@@ -114,10 +105,9 @@
             connectedCallback() {
                 this.innerHTML = `
                     <header class="text-center space-y-2 mb-8">
-                        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
-                            <span class="text-indigo-600">Compounding</span> Calculator
+                        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
+                            Compounding Calculator
                         </h1>
-                        <p class="text-slate-500">Project your wealth based on future dates</p>
                     </header>
                 `;
             }
@@ -131,7 +121,6 @@
                 this.currencies = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'AUD', 'CAD'];
                 this.months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
                 this.years = [];
-                // Updated: Generate years from -50 to +50 from current year
                 const currentYear = new Date().getFullYear();
                 for(let i=-50; i<=50; i++) this.years.push(currentYear + i);
             }
@@ -144,23 +133,20 @@
             render() {
                 const currentYear = new Date().getFullYear();
                 const defaultStartYear = currentYear;
-                const defaultEndYear = currentYear + 5;
+                const defaultEndYear = currentYear + 10;
                 const defaultMonth = new Date().getMonth();
 
                 this.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 h-full flex flex-col">
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-200 h-full flex flex-col">
                     <h2 class="text-lg font-semibold mb-6 flex items-center gap-2 text-slate-800">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-                        </svg>
                         Configuration
                     </h2>
 
-                    <form id="calcForm" class="space-y-6 flex-grow">
+                    <form id="calcForm" class="space-y-5 flex-grow">
                         <!-- Amount -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-2">Invested Amount</label>
-                            <div class="relative rounded-lg shadow-sm group focus-within:ring-2 focus-within:ring-indigo-500 transition-all duration-200">
+                            <div class="relative rounded-lg shadow-sm group focus-within:ring-2 focus-within:ring-slate-400 transition-all duration-200">
                                 <div class="absolute inset-y-0 left-0 flex items-center border-r border-slate-200 bg-slate-50 rounded-l-lg hover:bg-slate-100 transition-colors">
                                     <select id="currency" class="h-full py-0 pl-3 pr-8 border-transparent bg-transparent text-slate-700 font-semibold sm:text-sm rounded-l-lg focus:ring-0 cursor-pointer appearance-none outline-none">
                                         ${this.currencies.map(c => `<option value="${c}">${c}</option>`).join('')}
@@ -176,10 +162,10 @@
                         <!-- Interest & Compounding - Responsive Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <!-- Label updated to be generic since behavior changes based on compounding -->
                                 <label class="block text-sm font-medium text-slate-700 mb-2">Interest Rate (%)</label>
                                 <div class="relative rounded-lg shadow-sm">
-                                    <input type="number" id="interest" value="8" class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none sm:text-sm transition-all" placeholder="8.5">
+                                    <!-- Added pr-10 to prevent text overlapping the % symbol -->
+                                    <input type="number" id="interest" value="8" class="block w-full pl-4 pr-10 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none sm:text-sm transition-all" placeholder="8.5">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                         <span class="text-slate-500 font-medium">%</span>
                                     </div>
@@ -249,10 +235,7 @@
                         
                         <!-- Configure Button -->
                         <div class="pt-4">
-                            <button type="button" id="calcBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                </svg>
+                            <button type="button" id="calcBtn" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-all duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 flex items-center justify-center gap-2">
                                 Configure
                             </button>
                         </div>
@@ -298,12 +281,9 @@
                 this.innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- Principal -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between transition-transform duration-300 hover:scale-[1.02]">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
                         <div class="flex items-center gap-2 mb-2">
-                            <div class="p-1.5 bg-indigo-50 rounded-lg">
-                                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Principal</span>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Principal</span>
                         </div>
                         <div class="text-2xl font-bold text-slate-900">
                             ${formatCurrency(data.principal, data.currencyCode)}
@@ -311,16 +291,12 @@
                     </div>
 
                     <!-- Interest -->
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between relative overflow-hidden transition-transform duration-300 hover:scale-[1.02]">
-                        <div class="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-green-100 rounded-full blur-xl opacity-50 pointer-events-none"></div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex items-center gap-2">
-                                <div class="p-1.5 bg-green-50 rounded-lg">
-                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                                </div>
                                 <span class="text-xs font-bold text-green-600 uppercase tracking-wider">Interest</span>
                             </div>
-                            <span class="text-[10px] font-medium px-2 py-1 bg-green-50 text-green-700 rounded-full border border-green-100">Duration: ${data.totalMonths} Mo</span>
+                            <span class="text-[10px] font-medium px-2 py-1 bg-slate-100 text-slate-600 rounded-full">Duration: ${data.totalMonths} Mo</span>
                         </div>
                         <div class="text-2xl font-bold text-green-600">
                             +${formatCurrency(data.totalInterest, data.currencyCode)}
@@ -340,7 +316,6 @@
             }
 
             connectedCallback() {
-                // Initial render for structure
                 this.innerHTML = `<div class="p-6 bg-white rounded-2xl text-center text-slate-400">Loading chart...</div>`;
             }
 
@@ -351,7 +326,7 @@
                 // Calculations for Donut
                 const interestPct = (data.totalInterest / data.totalAmount) * 100;
                 
-                // --- LINE CHART CALCULATIONS (Monthly Granularity) ---
+                // --- LINE CHART CALCULATIONS ---
                 const width = 500, height = 200;
                 const maxVal = data.totalAmount * 1.05;
                 const minVal = data.principal * 0.9;
@@ -359,7 +334,6 @@
 
                 let growthPath = '', areaPath = '';
                 
-                // Use monthlyData for the chart instead of yearly breakdown
                 if (rangeY > 0 && data.monthlyData.length > 0) {
                     const dataPoints = data.monthlyData.map((row, index) => {
                         const x = (index / (data.monthlyData.length - 1)) * width;
@@ -367,7 +341,6 @@
                         return {x, y};
                     });
                     
-                    // Add start point (index -1 effectively)
                     const startY = height - ((data.principal - minVal) / rangeY) * height;
                     const allPoints = [{x: 0, y: startY}, ...dataPoints];
                     
@@ -377,22 +350,19 @@
 
                 this.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Donut Card -->
-                    <div class="lg:col-span-1 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl shadow-lg p-6 text-white relative overflow-hidden flex flex-col justify-between">
-                        <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500 opacity-20 rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none blur-2xl"></div>
-                        
-                        <div class="relative z-10">
-                            <h3 class="text-indigo-100 text-sm font-medium uppercase tracking-wider mb-1">Maturity Value</h3>
-                            <div class="text-3xl font-extrabold tracking-tight mb-6">
+                    <!-- Donut Card (Cleaned up noise) -->
+                    <div class="lg:col-span-1 bg-indigo-600 rounded-xl shadow-lg p-6 text-white flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-indigo-200 text-sm font-medium uppercase tracking-wider mb-1">Maturity Value</h3>
+                            <div class="text-3xl font-bold tracking-tight mb-6">
                                 ${formatCurrency(data.totalAmount, data.currencyCode)}
                             </div>
 
                             <div class="flex items-center gap-4 mb-4">
-                                <div class="relative w-24 h-24 flex-shrink-0">
+                                <div class="relative w-20 h-20 flex-shrink-0">
                                     <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
-                                        <path class="text-indigo-400/30" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4" />
-                                        <path class="text-green-400" stroke-dasharray="${interestPct}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4" />
+                                        <path class="text-indigo-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4" />
+                                        <path class="text-indigo-300" stroke-dasharray="${interestPct}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4" />
                                     </svg>
                                     <div class="absolute inset-0 flex items-center justify-center text-xs font-bold">
                                         ${interestPct.toFixed(0)}%
@@ -400,39 +370,31 @@
                                 </div>
                                 <div class="text-xs space-y-2">
                                     <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-indigo-300"></span><span class="opacity-90">Principal</span>
+                                        <span class="w-2 h-2 rounded-full bg-indigo-800"></span><span class="opacity-90">Principal</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-green-400"></span><span class="font-semibold text-green-300">Interest</span>
+                                        <span class="w-2 h-2 rounded-full bg-indigo-300"></span><span class="font-semibold text-indigo-100">Interest</span>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="inline-flex items-center gap-2 text-xs text-indigo-100 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm border border-white/10">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>${data.years}y ${data.months}m</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Interactive Area Chart -->
-                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-6 flex flex-col relative chart-container group">
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col relative chart-container group">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h3 class="font-semibold text-slate-800">Wealth Growth Trajectory</h3>
-                                <span class="text-xs text-slate-500">Compounding Visualization</span>
+                                <h3 class="font-semibold text-slate-800">Wealth Growth</h3>
                             </div>
-                            <!-- Tooltip / Info Box -->
-                            <div id="chartInfo" class="text-right transition-opacity duration-200 opacity-0 group-hover:opacity-100 pointer-events-none absolute right-6 top-6 bg-white/90 backdrop-blur-sm p-3 rounded-lg border border-slate-100 shadow-lg z-10">
-                                <div id="infoDate" class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Date</div>
-                                <div id="infoBalance" class="text-xl font-bold text-indigo-600 leading-none mb-1">Balance</div>
-                                <div id="infoGain" class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full inline-block">Growth</div>
+                            <!-- Tooltip -->
+                            <div id="chartInfo" class="text-right transition-opacity duration-200 opacity-0 group-hover:opacity-100 pointer-events-none absolute right-6 top-6 bg-white/95 p-3 rounded-lg border border-slate-100 shadow-xl z-10">
+                                <div id="infoDate" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date</div>
+                                <div id="infoBalance" class="text-lg font-bold text-indigo-600 leading-none mb-1">Balance</div>
+                                <div id="infoGain" class="text-xs font-semibold text-green-600">Growth</div>
                             </div>
                         </div>
 
-                        <div class="flex-grow min-h-[200px] relative w-full cursor-crosshair" id="chartArea">
+                        <div class="flex-grow min-h-[180px] relative w-full cursor-crosshair overflow-hidden" id="chartArea">
                             <svg class="w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 500 200">
                                 <!-- Grid -->
                                 <line x1="0" y1="0" x2="500" y2="0" stroke="#f1f5f9" stroke-width="1" />
@@ -442,18 +404,18 @@
                                 <line x1="0" y1="200" x2="500" y2="200" stroke="#f1f5f9" stroke-width="1" />
                                 
                                 <!-- Data Paths -->
-                                <path d="${areaPath}" class="fill-indigo-50 transition-opacity duration-300 opacity-80" />
-                                <path d="${growthPath}" fill="none" class="stroke-indigo-600 transition-all duration-300 drop-shadow-md" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="${areaPath}" class="fill-indigo-50 opacity-60" />
+                                <path d="${growthPath}" fill="none" class="stroke-indigo-600" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" />
                                 
-                                <!-- Vertical Guide Line (Dynamic) -->
+                                <!-- Vertical Guide Line -->
                                 <line id="guideLine" x1="0" y1="0" x2="0" y2="200" stroke="#6366f1" stroke-width="1" stroke-dasharray="4 4" class="opacity-0 transition-opacity duration-100" />
                             </svg>
-                            
-                            <!-- X Axis Labels -->
-                            <div class="flex justify-between mt-4 text-xs text-slate-400 font-medium px-1 select-none">
-                                <span>${data.startYear}</span>
-                                <span>${data.endYear}</span>
-                            </div>
+                        </div>
+                        
+                        <!-- X Axis Labels (Fixed spacing) -->
+                        <div class="flex justify-between mt-4 text-xs text-slate-400 font-medium px-1">
+                            <span>${data.startYear}</span>
+                            <span>${data.endYear}</span>
                         </div>
                     </div>
                 </div>
@@ -484,7 +446,7 @@
                     if (point) {
                         infoDate.textContent = point.dateLabel;
                         infoBalance.textContent = formatCurrency(point.balance, this.currentData.currencyCode);
-                        infoGain.textContent = `+${formatDecimalCurrency(point.monthlyInterest, this.currentData.currencyCode)} (Mo. Growth)`;
+                        infoGain.textContent = `+${formatDecimalCurrency(point.monthlyInterest, this.currentData.currencyCode)}`;
                         
                         const svgX = ratio * 500;
                         guideLine.setAttribute('x1', svgX);
@@ -505,32 +467,31 @@
             update(data) {
                 if (!data) return;
                 this.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100 mt-6">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                        <h3 class="font-semibold text-slate-800">Detailed Schedule</h3>
-                        <span class="text-xs text-slate-400">Yearly Breakdown</span>
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200 mt-6">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                        <h3 class="font-semibold text-slate-800 text-sm">Detailed Schedule</h3>
+                        <span class="text-xs text-slate-400 font-medium bg-slate-100 px-2 py-1 rounded">${data.compoundingFreq === 12 ? 'Monthly' : 'Annual'} Breakdown</span>
                     </div>
                     <div class="overflow-x-auto max-h-[400px]">
-                        <table class="min-w-full divide-y divide-slate-200 relative">
-                            <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                        <table class="min-w-full divide-y divide-slate-100 relative">
+                            <thead class="bg-white sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Year</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Period</th>
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Opening</th>
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-green-600 uppercase tracking-wider">Interest</th>
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-slate-900 uppercase tracking-wider">Closing</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-slate-200">
+                            <tbody class="bg-white divide-y divide-slate-100">
                                 ${data.breakdown.map(row => `
-                                <tr class="hover:bg-slate-50 transition-colors group">
-                                    <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-indigo-600 group-hover:text-indigo-800">
-                                        <span class="inline-block w-2 h-2 rounded-full bg-indigo-200 mr-2 group-hover:bg-indigo-500 transition-colors"></span>
-                                        ${row.yearLabel}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-slate-700">
+                                        ${row.periodLabel}
                                     </td>
                                     <td class="px-6 py-3 whitespace-nowrap text-sm text-right text-slate-500">
                                         ${formatCurrency(row.openingBalance, data.currencyCode)}
                                     </td>
-                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-right text-green-600 font-medium bg-green-50/30">
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-right text-green-600 font-medium">
                                         +${formatCurrency(row.interestEarned, data.currencyCode)}
                                     </td>
                                     <td class="px-6 py-3 whitespace-nowrap text-sm text-right text-slate-900 font-bold">
@@ -564,6 +525,7 @@
             calculate(val);
         });
 
+        // --- ALGORITHM START ---
         function calculate(val) {
             const { amount, interest, compounding, currency, startMonth, startYear, endMonth, endYear } = val;
 
@@ -585,46 +547,63 @@
             }
 
             const monthlyData = [];
-            const yearlyBreakdown = [];
+            const breakdown = [];
             
-            let currentDate = new Date(parseInt(startYear), parseInt(startMonth));
+            // let currentDate = new Date(parseInt(startYear), parseInt(startMonth));
             let yearStartBalance = principal;
             let yearInterestAcc = 0;
             let finalAmount = principal;
             let prevBalance = principal;
 
             // --- Formula-Based Calculation Loop ---
-            // Using explicit Formula: A = P * (1 + r)^n for every step to generate graph data
-            // r = rate_decimal (for monthly) or rate_decimal (for annual)
-            // n = totalMonths (for monthly) or totalMonths/12 (for annual)
-
             for (let i = 1; i <= totalMonths; i++) {
                 
                 let currentBalance;
 
                 if (compoundingFreq === 12) {
                     // Algorithm 1: Monthly Compounding
-                    // Formula: P * (1 + r)^n
-                    // Here: r = rate_decimal (User said "Annual rate per month" implies this is the periodic rate)
-                    // n = i
                     currentBalance = principal * Math.pow(1 + rate_decimal, i);
                 } else {
                     // Algorithm 2: Annual Compounding
-                    // Formula: P * (1 + R)^years
-                    // Here: R = rate_decimal
-                    // years = i / 12
                     currentBalance = principal * Math.pow(1 + rate_decimal, i / 12);
                 }
 
-                // Determine increase just for this month (for the graph tooltip)
+                // Determine increase just for this month
                 const monthlyInterest = currentBalance - prevBalance;
-                yearInterestAcc += monthlyInterest;
+                
+                // Construct labels
+                const mIndex = (parseInt(startMonth) + i - 1) % 12;
+                const yIndex = Math.floor(parseInt(startYear) + (parseInt(startMonth) + i - 1)/12);
+                const label = `${monthsNames[mIndex]} ${yIndex}`;
+
+                // Populate Breakdown Array
+                if (compoundingFreq === 12) {
+                    // Monthly View: Push every month
+                    breakdown.push({
+                        periodLabel: label,
+                        openingBalance: prevBalance,
+                        interestEarned: monthlyInterest,
+                        closingBalance: currentBalance
+                    });
+                } else {
+                    // Annual View: Accumulate and push at year end
+                    yearInterestAcc += monthlyInterest;
+                    
+                    if (i % 12 === 0 || i === totalMonths) {
+                         breakdown.push({
+                            periodLabel: `Year ${Math.ceil(i/12)}`,
+                            openingBalance: yearStartBalance,
+                            interestEarned: yearInterestAcc,
+                            closingBalance: currentBalance
+                        });
+                        yearStartBalance = currentBalance;
+                        yearInterestAcc = 0;
+                    }
+                }
+
+                // Update state for next iteration
                 prevBalance = currentBalance;
                 finalAmount = currentBalance;
-
-                // Labeling
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                const label = `${monthsNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
 
                 monthlyData.push({
                     monthIndex: i,
@@ -632,19 +611,6 @@
                     balance: currentBalance,
                     monthlyInterest: monthlyInterest 
                 });
-
-                // Year End Logic
-                const currentYr = currentDate.getFullYear();
-                if (i % 12 === 0 || i === totalMonths) {
-                     yearlyBreakdown.push({
-                        yearLabel: `Year ${Math.ceil(i/12)} (${currentYr})`,
-                        openingBalance: yearStartBalance,
-                        interestEarned: yearInterestAcc,
-                        closingBalance: currentBalance
-                    });
-                    yearStartBalance = currentBalance;
-                    yearInterestAcc = 0;
-                }
             }
 
             const result = {
@@ -656,13 +622,15 @@
                 totalMonths: totalMonths,
                 startYear: startYear,
                 endYear: endYear,
-                breakdown: yearlyBreakdown,
+                breakdown: breakdown,
                 monthlyData: monthlyData,
-                currencyCode: currency
+                currencyCode: currency,
+                compoundingFreq: compoundingFreq
             };
 
             showSuccess(result);
         }
+        // --- ALGORITHM END ---
 
         function showSuccess(data) {
             errorContainer.classList.add('hidden');
