@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeTracker Pro</title>
+    <!-- Include Chart.js for Data Analysis -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* 70% Black/Dark */
+            --bg-black: #121212;
+            --bg-darker: #0a0a0a;
+            
+            /* 30% Grey */
+            --panel-grey: #242424;
+            --panel-light: #333333;
+            --text-main: #e0e0e0;
+            --text-muted: #888888;
+            
+            /* 10% Blue (Accent) */
+            --accent-blue: #1e90ff;
+            --accent-glow: rgba(30, 144, 255, 0.4);
+            
+            /* Status Colors */
+            --profit: #00ff7f;
+            --loss: #ff4757;
+            
+            /* Skeuomorphic Shadows */
+            --shadow-raised: 5px 5px 10px #080808, -3px -3px 8px #303030;
+            --shadow-recessed: inset 4px 4px 8px #080808, inset -2px -2px 6px #303030;
+            --shadow-button: inset 1px 1px 2px rgba(255,255,255,0.2), 3px 3px 8px #080808;
+            --shadow-button-active: inset 3px 3px 6px #080808, inset -1px -1px 2px rgba(255,255,255,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-main);
+            padding: 2rem;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* --- Header & Controls --- */
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: linear-gradient(145deg, var(--panel-grey), var(--bg-black));
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-raised);
+            border: 1px solid #2a2a2a;
+        }
+
+        header h1 {
+            color: var(--text-main);
+            font-size: 1.8rem;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .currency-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-darker);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-recessed);
+        }
+
+        .currency-selector select {
+            background: transparent;
+            color: var(--accent-blue);
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* --- Dashboard Statistics --- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, var(--panel-light), var(--panel-grey));
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow-raised);
+            text-align: center;
+            border-top: 1px solid #444;
+            border-left: 1px solid #333;
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 1px black;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 1px 2px 3px black;
+        }
+
+        .screen-display {
+            background: var(--bg-darker);
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: var(--shadow-recessed);
+            border: 1px solid #1a1a1a;
+        }
+
+        /* --- Main Layout Grids --- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: linear-gradient(145deg, var(--panel-light), var(--panel-grey));
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-raised);
+            border: 1px solid #333;
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+            text-shadow: 0 0 5px var(--accent-glow);
+            border-bottom: 2px solid var(--bg-darker);
+            padding-bottom: 0.5rem;
+            box-shadow: 0 2px 0 #333; /* Bevel effect for border */
+        }
+
+        /* --- Form Elements (Skeuomorphic) --- */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-shadow: 1px 1px 1px black;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg-darker);
+            color: var(--text-main);
+            border: 1px solid #111;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-shadow: var(--shadow-recessed);
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-recessed), 0 0 8px var(--accent-glow);
+        }
+
+        button.btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(145deg, #2a9df4, #187bcd);
+            color: white;
+            border: 1px solid #0f528a;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: var(--shadow-button);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.1s ease;
+            margin-top: 1rem;
+        }
+
+        button.btn-primary:active {
+            box-shadow: var(--shadow-button-active);
+            transform: translateY(2px);
+        }
+
+        /* --- Charts Area --- */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .chart-wrapper {
+            background: var(--bg-darker);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-recessed);
+            position: relative;
+            height: 300px;
+        }
+
+        /* --- Table Styles --- */
+        .table-responsive {
+            overflow-x: auto;
+            background: var(--bg-darker);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: var(--shadow-recessed);
+            border: 1px solid #111;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #222;
+        }
+
+        th {
+            background: linear-gradient(180deg, #333, #222);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            box-shadow: inset 0 1px 0 #444;
+        }
+
+        td {
+            font-size: 0.95rem;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .text-profit { color: var(--profit); text-shadow: 0 0 5px rgba(0, 255, 127, 0.3); }
+        .text-loss { color: var(--loss); text-shadow: 0 0 5px rgba(255, 71, 87, 0.3); }
+        .text-neutral { color: var(--text-main); }
+        
+        .delete-btn {
+            background: linear-gradient(145deg, #444, #333);
+            color: var(--loss);
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #222;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-button);
+            font-weight: bold;
+        }
+        
+        .delete-btn:active {
+            box-shadow: var(--shadow-button-active);
+            transform: translateY(1px);
+        }
+
+        @media (max-width: 992px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .charts-container { grid-template-columns: 1fr; }
+            .header-controls { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-controls">
+        <header>
+            <h1>TradeTracker Pro</h1>
+            <p>Advanced Trading Analytics Terminal</p>
+        </header>
+        <div class="currency-selector">
+            <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Base Currency:</span>
+            <select id="currency" onchange="changeCurrency()">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="INR">INR (₹)</option>
+                <option value="JPY">JPY (¥)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="stat-card">
+            <h3>Principal Invested</h3>
+            <div class="screen-display">
+                <div class="value text-neutral" id="stat-principal">0.00</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <h3>Total P / L</h3>
+            <div class="screen-display">
+                <div class="value" id="stat-pnl">0.00</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <h3>Net Total Balance</h3>
+            <div class="screen-display">
+                <div class="value text-neutral" id="stat-portfolio">0.00</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <h3>Net Return (%)</h3>
+            <div class="screen-display">
+                <div class="value" id="stat-return">0.00%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- Input Form -->
+        <div class="card">
+            <h2>Log New Trade</h2>
+            <form id="tradeForm">
+                <div class="form-group">
+                    <label for="date">Date of Trade</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="asset">Asset / Ticker</label>
+                    <input type="text" id="asset" placeholder="e.g. AAPL, BTC, EUR/USD" required>
+                </div>
+                <div class="form-group">
+                    <label for="principal">Principal Amount</label>
+                    <input type="number" id="principal" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="pnl">Profit / Loss</label>
+                    <input type="number" id="pnl" step="0.01" placeholder="Use negative for loss (e.g. -50)" required>
+                </div>
+                <button type="submit" class="btn-primary">Execute Log Entry</button>
+            </form>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="card">
+            <h2>Analytics Terminal</h2>
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <canvas id="pnlChart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="assetChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade History Table -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2>Encrypted Trade Ledger</h2>
+        <div class="table-responsive">
+            <table id="tradeTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Asset</th>
+                        <th>Principal</th>
+                        <th>P / L</th>
+                        <th>Return %</th>
+                        <th>Final Balance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows generated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let state = {
+            trades: [],
+            currency: 'USD'
+        };
+
+        let pnlChartInstance = null;
+        let assetChartInstance = null;
+
+        // Rich color palette for charts
+        const chartColors = [
+            '#1e90ff', '#00ff7f', '#ff4757', '#ffa502', '#3742fa', 
+            '#ff6348', '#2ed573', '#70a1ff', '#ff7f50', '#a4b0be'
+        ];
+
+        // --- Initialization ---
+        function init() {
+            const savedTrades = localStorage.getItem('tradeLogsV2');
+            const savedCurrency = localStorage.getItem('tradeCurrency');
+
+            if (savedTrades) state.trades = JSON.parse(savedTrades);
+            if (savedCurrency) {
+                state.currency = savedCurrency;
+                document.getElementById('currency').value = state.currency;
+            }
+            
+            document.getElementById('date').valueAsDate = new Date();
+            
+            // Set Chart.js defaults for dark theme
+            Chart.defaults.color = '#888888';
+            Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+            
+            updateUI();
+        }
+
+        // --- Formatters ---
+        const formatMoney = (amount) => {
+            return new Intl.NumberFormat('en-US', { 
+                style: 'currency', 
+                currency: state.currency 
+            }).format(amount);
+        };
+
+        function changeCurrency() {
+            state.currency = document.getElementById('currency').value;
+            localStorage.setItem('tradeCurrency', state.currency);
+            updateUI();
+        }
+
+        // --- Core Logic & UI Update ---
+        function updateUI() {
+            let totalPrincipal = 0;
+            let totalPnL = 0;
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ''; 
+
+            // Sort trades by date (newest first for table)
+            const sortedTrades = [...state.trades].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sortedTrades.forEach((trade) => {
+                totalPrincipal += trade.principal;
+                totalPnL += trade.pnl;
+
+                const tradeReturn = trade.principal > 0 ? ((trade.pnl / trade.principal) * 100).toFixed(2) : 0;
+                
+                const pnlClass = trade.pnl >= 0 ? 'text-profit' : 'text-loss';
+                const pnlPrefix = trade.pnl > 0 ? '+' : '';
+                const finalBalance = trade.principal + trade.pnl;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="color: #aaa;">${trade.date}</td>
+                    <td><strong style="color: var(--accent-blue);">${trade.asset}</strong></td>
+                    <td>${formatMoney(trade.principal)}</td>
+                    <td class="${pnlClass}">${pnlPrefix}${formatMoney(trade.pnl)}</td>
+                    <td class="${pnlClass}">${pnlPrefix}${tradeReturn}%</td>
+                    <td style="color: var(--text-main); font-weight: 600;">${formatMoney(finalBalance)}</td>
+                    <td><button class="delete-btn" onclick="deleteTrade('${trade.id}')">X</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update Dashboard metrics
+            const currentPortfolio = totalPrincipal + totalPnL;
+            let netReturnPercent = totalPrincipal > 0 ? (totalPnL / totalPrincipal) * 100 : 0;
+
+            document.getElementById('stat-principal').textContent = formatMoney(totalPrincipal);
+            
+            const pnlElement = document.getElementById('stat-pnl');
+            pnlElement.textContent = (totalPnL > 0 ? '+' : '') + formatMoney(totalPnL);
+            pnlElement.className = 'value ' + (totalPnL >= 0 ? 'text-profit' : 'text-loss');
+            
+            document.getElementById('stat-portfolio').textContent = formatMoney(currentPortfolio);
+            
+            const returnElement = document.getElementById('stat-return');
+            returnElement.textContent = (netReturnPercent > 0 ? '+' : '') + netReturnPercent.toFixed(2) + '%';
+            returnElement.className = 'value ' + (netReturnPercent >= 0 ? 'text-profit' : 'text-loss');
+
+            localStorage.setItem('tradeLogsV2', JSON.stringify(state.trades));
+
+            // Update Charts
+            renderCharts();
+        }
+
+        // --- Chart Generation ---
+        function renderCharts() {
+            // Sort oldest to newest for chronological charts
+            const chronologicalTrades = [...state.trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // 1. Prepare Data for Cumulative P/L Line Chart
+            let cumulativePnL = 0;
+            const dates = [];
+            const pnlData = [];
+
+            chronologicalTrades.forEach(trade => {
+                cumulativePnL += trade.pnl;
+                dates.push(trade.date);
+                pnlData.push(cumulativePnL);
+            });
+
+            if (pnlChartInstance) pnlChartInstance.destroy();
+            const ctxLine = document.getElementById('pnlChart').getContext('2d');
+            
+            // Create gradient for line chart
+            let gradientLine = ctxLine.createLinearGradient(0, 0, 0, 300);
+            gradientLine.addColorStop(0, 'rgba(30, 144, 255, 0.5)');
+            gradientLine.addColorStop(1, 'rgba(30, 144, 255, 0.0)');
+
+            pnlChartInstance = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: dates.length ? dates : ['No Data'],
+                    datasets: [{
+                        label: `Cumulative P/L (${state.currency})`,
+                        data: pnlData.length ? pnlData : [0],
+                        borderColor: '#1e90ff',
+                        backgroundColor: gradientLine,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#0a0a0a',
+                        pointBorderColor: '#1e90ff',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { labels: { color: '#e0e0e0' } },
+                        tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#1e90ff' }
+                    },
+                    scales: {
+                        x: { grid: { color: '#333' } },
+                        y: { grid: { color: '#333' } }
+                    }
+                }
+            });
+
+            // 2. Prepare Data for Asset Allocation Doughnut Chart
+            const assetMap = {};
+            state.trades.forEach(trade => {
+                assetMap[trade.asset] = (assetMap[trade.asset] || 0) + trade.principal;
+            });
+            
+            const assetLabels = Object.keys(assetMap);
+            const assetData = Object.values(assetMap);
+
+            if (assetChartInstance) assetChartInstance.destroy();
+            const ctxDoughnut = document.getElementById('assetChart').getContext('2d');
+            
+            assetChartInstance = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: assetLabels.length ? assetLabels : ['No Data'],
+                    datasets: [{
+                        data: assetData.length ? assetData : [1],
+                        backgroundColor: assetData.length ? chartColors : ['#333'],
+                        borderColor: '#0a0a0a',
+                        borderWidth: 2,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#e0e0e0', padding: 15, boxWidth: 12 } },
+                        title: { display: true, text: 'Allocation by Asset', color: '#888' }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('tradeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const newTrade = {
+                id: crypto.randomUUID(),
+                date: document.getElementById('date').value,
+                asset: document.getElementById('asset').value.toUpperCase(),
+                principal: parseFloat(document.getElementById('principal').value),
+                pnl: parseFloat(document.getElementById('pnl').value)
+            };
+
+            state.trades.push(newTrade);
+
+            document.getElementById('asset').value = '';
+            document.getElementById('principal').value = '';
+            document.getElementById('pnl').value = '';
+            document.getElementById('asset').focus();
+
+            updateUI();
+        });
+
+        function deleteTrade(id) {
+            state.trades = state.trades.filter(trade => trade.id !== id);
+            updateUI();
+        }
+
+        // --- Boot Application ---
+        init();
+    </script>
+</body>
+</html>
