@@ -44,7 +44,7 @@
             background-color: var(--bg-black);
             color: var(--text-main);
             padding: 2rem;
-            max-width: 1300px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -95,24 +95,16 @@
             box-shadow: 0 0 8px var(--accent-glow);
         }
 
-        .currency-selector {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .currency-display {
             background: var(--bg-darker);
-            padding: 0.5rem 1rem;
+            padding: 0.8rem 1.2rem;
             border-radius: 8px;
             box-shadow: var(--shadow-recessed);
-        }
-
-        .currency-selector select {
-            background: transparent;
+            border: 1px solid #1a1a1a;
             color: var(--accent-blue);
-            border: none;
-            font-size: 1.1rem;
             font-weight: bold;
-            outline: none;
-            cursor: pointer;
+            font-size: 1.1rem;
+            text-transform: uppercase;
         }
 
         /* --- Dashboard Statistics --- */
@@ -208,10 +200,48 @@
             transition: all 0.2s;
         }
 
+        /* Customizing the date picker calendar icon for dark mode */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
         input:focus {
             outline: none;
             border-color: var(--accent-blue);
             box-shadow: var(--shadow-recessed), 0 0 8px var(--accent-glow);
+        }
+
+        /* --- Custom Date Picker Wrapper --- */
+        .date-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .date-wrapper input {
+            padding-right: 2.8rem; /* Make room for the calendar icon */
+            position: relative;
+        }
+
+        .calendar-icon {
+            position: absolute;
+            right: 0.8rem;
+            color: var(--accent-blue);
+            pointer-events: none; /* Let clicks pass through to the native indicator */
+            z-index: 1;
+        }
+
+        /* Hide native icon visually but keep it clickable over our custom icon */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 3rem;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
         }
 
         button.btn-primary {
@@ -235,32 +265,23 @@
             transform: translateY(2px);
         }
 
-        /* --- Charts Area --- */
-        .charts-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .chart-wrapper {
-            background: var(--bg-darker);
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: var(--shadow-recessed);
-            position: relative;
-            height: 300px;
-        }
-
         /* --- Table Styles --- */
         .table-responsive {
             overflow-x: auto;
+            overflow-y: auto;
+            max-height: 400px;
             background: var(--bg-darker);
             border-radius: 8px;
             padding: 10px;
             box-shadow: var(--shadow-recessed);
             border: 1px solid #111;
         }
+
+        /* Scrollbar for table */
+        .table-responsive::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-responsive::-webkit-scrollbar-track { background: var(--bg-darker); }
+        .table-responsive::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        .table-responsive::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
 
         table {
             width: 100%;
@@ -281,6 +302,9 @@
             text-transform: uppercase;
             box-shadow: inset 0 1px 0 #444;
             white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         td {
@@ -313,59 +337,45 @@
             transform: translateY(1px);
         }
 
+        /* --- Charts Area --- */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .chart-wrapper {
+            background: var(--bg-darker);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-recessed);
+            position: relative;
+            height: 350px;
+        }
+
         @media (max-width: 992px) {
             .main-grid { grid-template-columns: 1fr; }
             .charts-container { grid-template-columns: 1fr; }
             .header-controls { flex-direction: column; gap: 1rem; text-align: center; }
+            .table-responsive { max-height: 500px; }
         }
 
         /* --- Enhanced Mobile Responsiveness --- */
         @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-            .dashboard {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-            .header-controls {
-                padding: 1rem;
-            }
-            header h1 {
-                font-size: 1.5rem;
-            }
-            .card {
-                padding: 1.2rem;
-            }
-            .chart-wrapper {
-                height: 250px;
-            }
+            body { padding: 1rem; }
+            .dashboard { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .header-controls { padding: 1rem; }
+            header h1 { font-size: 1.5rem; }
+            .card { padding: 1.2rem; }
+            .chart-wrapper { height: 280px; }
         }
 
         @media (max-width: 480px) {
-            body {
-                padding: 0.5rem;
-            }
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            .currency-selector {
-                flex-direction: column;
-                width: 100%;
-                text-align: center;
-            }
-            .currency-selector select {
-                width: 100%;
-                text-align: center;
-                margin-top: 5px;
-            }
-            .nav-link {
-                width: 100%;
-                justify-content: center;
-            }
-            .card {
-                padding: 1rem;
-            }
+            body { padding: 0.5rem; }
+            .dashboard { grid-template-columns: 1fr; }
+            .nav-link { width: 100%; justify-content: center; }
+            .card { padding: 1rem; }
         }
     </style>
 </head>
@@ -380,17 +390,8 @@
                 Compounding Calculator
             </a>
         </header>
-        <div class="currency-selector">
-            <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Base Currency:</span>
-            <select id="currency" onchange="changeCurrency()">
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="INR">INR (₹)</option>
-                <option value="JPY">JPY (¥)</option>
-                <option value="AUD">AUD ($)</option>
-                <option value="CAD">CAD ($)</option>
-            </select>
+        <div class="currency-display">
+            Base Currency: INR (₹)
         </div>
     </div>
 
@@ -421,6 +422,7 @@
         </div>
     </div>
 
+    <!-- MAIN GRID: Form (Left) & Ledger (Right) -->
     <div class="main-grid">
         <!-- Input Form -->
         <div class="card">
@@ -428,58 +430,67 @@
             <form id="tradeForm">
                 <div class="form-group">
                     <label for="date">Date of Trade</label>
-                    <input type="date" id="date" required>
+                    <div class="date-wrapper">
+                        <input type="date" id="date" required>
+                        <!-- Custom Calendar SVG Icon -->
+                        <svg class="calendar-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="asset">Asset / Ticker</label>
-                    <input type="text" id="asset" placeholder="e.g. AAPL, BTC, EUR/USD" required>
+                    <input type="text" id="asset" placeholder="e.g. NIFTY, BTC, RELIANCE" required>
                 </div>
                 <div class="form-group">
-                    <label for="principal">Principal Amount</label>
+                    <label for="principal">Principal Amount (₹)</label>
                     <input type="number" id="principal" step="0.01" min="0" placeholder="0.00" required>
                 </div>
                 <div class="form-group">
-                    <label for="pnl">Profit / Loss</label>
-                    <input type="number" id="pnl" step="0.01" placeholder="Use negative for loss (e.g. -50)" required>
+                    <label for="pnl">Profit / Loss (₹)</label>
+                    <input type="number" id="pnl" step="0.01" placeholder="Use negative for loss (e.g. -500)" required>
                 </div>
                 <button type="submit" class="btn-primary">Execute Log Entry</button>
             </form>
         </div>
 
-        <!-- Charts Section -->
+        <!-- Trade History Table -->
         <div class="card">
-            <h2>Analytics Terminal</h2>
-            <div class="charts-container">
-                <div class="chart-wrapper">
-                    <canvas id="pnlChart"></canvas>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="assetChart"></canvas>
-                </div>
+            <h2>Encrypted Trade Ledger</h2>
+            <div class="table-responsive">
+                <table id="tradeTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Asset</th>
+                            <th>Principal</th>
+                            <th>P / L</th>
+                            <th>Return %</th>
+                            <th>Final Balance</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Rows generated by JS -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Trade History Table -->
+    <!-- Bottom Section: Analytics -->
     <div class="card" style="margin-bottom: 2rem;">
-        <h2>Encrypted Trade Ledger</h2>
-        <div class="table-responsive">
-            <table id="tradeTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Asset</th>
-                        <th>Principal</th>
-                        <th>P / L</th>
-                        <th>Return %</th>
-                        <th>Final Balance</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Rows generated by JS -->
-                </tbody>
-            </table>
+        <h2>Analytics Terminal</h2>
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <canvas id="pnlChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="assetChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -487,7 +498,7 @@
         // --- State Management ---
         let state = {
             trades: [],
-            currency: 'USD'
+            currency: 'INR'
         };
 
         let pnlChartInstance = null;
@@ -501,13 +512,10 @@
 
         // --- Initialization ---
         function init() {
-            const savedTrades = localStorage.getItem('tradeLogsV2');
-            const savedCurrency = localStorage.getItem('tradeCurrency');
+            const savedTrades = localStorage.getItem('tradeLogsV3'); // Updated key to avoid conflict with older formats
 
-            if (savedTrades) state.trades = JSON.parse(savedTrades);
-            if (savedCurrency) {
-                state.currency = savedCurrency;
-                document.getElementById('currency').value = state.currency;
+            if (savedTrades) {
+                state.trades = JSON.parse(savedTrades);
             }
             
             document.getElementById('date').valueAsDate = new Date();
@@ -521,17 +529,18 @@
 
         // --- Formatters ---
         const formatMoney = (amount) => {
-            return new Intl.NumberFormat('en-US', { 
+            return new Intl.NumberFormat('en-IN', { 
                 style: 'currency', 
                 currency: state.currency 
             }).format(amount);
         };
 
-        function changeCurrency() {
-            state.currency = document.getElementById('currency').value;
-            localStorage.setItem('tradeCurrency', state.currency);
-            updateUI();
-        }
+        const formatDate = (dateString) => {
+            // Converts YYYY-MM-DD to DD-MM-YYYY
+            if(!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}-${year}`;
+        };
 
         // --- Core Logic & UI Update ---
         function updateUI() {
@@ -541,22 +550,22 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = ''; 
 
-            // Sort trades by date (newest first for table)
-            const sortedTrades = [...state.trades].sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Sort trades by date in ASCENDING ORDER (oldest to newest)
+            const sortedTrades = [...state.trades].sort((a, b) => new Date(a.date) - new Date(b.date));
 
             sortedTrades.forEach((trade) => {
                 totalPrincipal += trade.principal;
                 totalPnL += trade.pnl;
 
                 const tradeReturn = trade.principal > 0 ? ((trade.pnl / trade.principal) * 100).toFixed(2) : 0;
-                const finalBalance = trade.principal + trade.pnl; // Final balance calculation added here
+                const finalBalance = trade.principal + trade.pnl; 
                 
                 const pnlClass = trade.pnl >= 0 ? 'text-profit' : 'text-loss';
                 const pnlPrefix = trade.pnl > 0 ? '+' : '';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td style="color: #aaa;">${trade.date}</td>
+                    <td style="color: #aaa;">${formatDate(trade.date)}</td>
                     <td><strong style="color: var(--accent-blue);">${trade.asset}</strong></td>
                     <td>${formatMoney(trade.principal)}</td>
                     <td class="${pnlClass}">${pnlPrefix}${formatMoney(trade.pnl)}</td>
@@ -568,7 +577,7 @@
             });
 
             // Update Dashboard metrics
-            const currentPortfolio = totalPrincipal + totalPnL; // Net Total Balance
+            const currentPortfolio = totalPrincipal + totalPnL; 
             let netReturnPercent = totalPrincipal > 0 ? (totalPnL / totalPrincipal) * 100 : 0;
 
             document.getElementById('stat-principal').textContent = formatMoney(totalPrincipal);
@@ -583,17 +592,14 @@
             returnElement.textContent = (netReturnPercent > 0 ? '+' : '') + netReturnPercent.toFixed(2) + '%';
             returnElement.className = 'value ' + (netReturnPercent >= 0 ? 'text-profit' : 'text-loss');
 
-            localStorage.setItem('tradeLogsV2', JSON.stringify(state.trades));
+            localStorage.setItem('tradeLogsV3', JSON.stringify(state.trades));
 
             // Update Charts
-            renderCharts();
+            renderCharts(sortedTrades);
         }
 
         // --- Chart Generation ---
-        function renderCharts() {
-            // Sort oldest to newest for chronological charts
-            const chronologicalTrades = [...state.trades].sort((a, b) => new Date(a.date) - new Date(b.date));
-
+        function renderCharts(chronologicalTrades) {
             // 1. Prepare Data for Cumulative P/L Line Chart
             let cumulativePnL = 0;
             const dates = [];
@@ -601,14 +607,13 @@
 
             chronologicalTrades.forEach(trade => {
                 cumulativePnL += trade.pnl;
-                dates.push(trade.date);
+                dates.push(formatDate(trade.date));
                 pnlData.push(cumulativePnL);
             });
 
             if (pnlChartInstance) pnlChartInstance.destroy();
             const ctxLine = document.getElementById('pnlChart').getContext('2d');
             
-            // Create gradient for line chart
             let gradientLine = ctxLine.createLinearGradient(0, 0, 0, 300);
             gradientLine.addColorStop(0, 'rgba(30, 144, 255, 0.5)');
             gradientLine.addColorStop(1, 'rgba(30, 144, 255, 0.0)');
@@ -671,7 +676,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: '#e0e0e0', padding: 15, boxWidth: 12 } },
+                        legend: { position: 'right', labels: { color: '#e0e0e0', padding: 15, boxWidth: 12 } },
                         title: { display: true, text: 'Allocation by Asset', color: '#888' }
                     },
                     cutout: '70%'
