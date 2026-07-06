@@ -65,11 +65,34 @@
             color: var(--text-main);
             font-size: 1.8rem;
             text-shadow: 1px 1px 2px black;
+            margin-bottom: 0.25rem;
         }
 
         header p {
             color: var(--text-muted);
             font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-darker);
+            border-radius: 6px;
+            box-shadow: var(--shadow-recessed);
+            border: 1px solid #1a1a1a;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: white;
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
         .currency-selector {
@@ -120,7 +143,7 @@
         }
 
         .stat-card .value {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: bold;
             text-shadow: 1px 2px 3px black;
         }
@@ -156,10 +179,10 @@
             text-shadow: 0 0 5px var(--accent-glow);
             border-bottom: 2px solid var(--bg-darker);
             padding-bottom: 0.5rem;
-            box-shadow: 0 2px 0 #333; /* Bevel effect for border */
+            box-shadow: 0 2px 0 #333; 
         }
 
-        /* --- Form Elements (Skeuomorphic) --- */
+        /* --- Form Elements --- */
         .form-group {
             margin-bottom: 1.2rem;
         }
@@ -253,14 +276,16 @@
         th {
             background: linear-gradient(180deg, #333, #222);
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             text-transform: uppercase;
             box-shadow: inset 0 1px 0 #444;
+            white-space: nowrap;
         }
 
         td {
             font-size: 0.95rem;
+            white-space: nowrap;
         }
 
         tr:hover td {
@@ -293,6 +318,55 @@
             .charts-container { grid-template-columns: 1fr; }
             .header-controls { flex-direction: column; gap: 1rem; text-align: center; }
         }
+
+        /* --- Enhanced Mobile Responsiveness --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            .header-controls {
+                padding: 1rem;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            .card {
+                padding: 1.2rem;
+            }
+            .chart-wrapper {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .currency-selector {
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+            }
+            .currency-selector select {
+                width: 100%;
+                text-align: center;
+                margin-top: 5px;
+            }
+            .nav-link {
+                width: 100%;
+                justify-content: center;
+            }
+            .card {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -301,6 +375,10 @@
         <header>
             <h1>TradeTracker Pro</h1>
             <p>Advanced Trading Analytics Terminal</p>
+            <a href="calculator.html" class="nav-link">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Compounding Calculator
+            </a>
         </header>
         <div class="currency-selector">
             <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Base Currency:</span>
@@ -310,6 +388,8 @@
                 <option value="GBP">GBP (£)</option>
                 <option value="INR">INR (₹)</option>
                 <option value="JPY">JPY (¥)</option>
+                <option value="AUD">AUD ($)</option>
+                <option value="CAD">CAD ($)</option>
             </select>
         </div>
     </div>
@@ -469,10 +549,10 @@
                 totalPnL += trade.pnl;
 
                 const tradeReturn = trade.principal > 0 ? ((trade.pnl / trade.principal) * 100).toFixed(2) : 0;
+                const finalBalance = trade.principal + trade.pnl; // Final balance calculation added here
                 
                 const pnlClass = trade.pnl >= 0 ? 'text-profit' : 'text-loss';
                 const pnlPrefix = trade.pnl > 0 ? '+' : '';
-                const finalBalance = trade.principal + trade.pnl;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -481,14 +561,14 @@
                     <td>${formatMoney(trade.principal)}</td>
                     <td class="${pnlClass}">${pnlPrefix}${formatMoney(trade.pnl)}</td>
                     <td class="${pnlClass}">${pnlPrefix}${tradeReturn}%</td>
-                    <td style="color: var(--text-main); font-weight: 600;">${formatMoney(finalBalance)}</td>
+                    <td style="color: var(--text-main); font-weight: bold;">${formatMoney(finalBalance)}</td>
                     <td><button class="delete-btn" onclick="deleteTrade('${trade.id}')">X</button></td>
                 `;
                 tbody.appendChild(row);
             });
 
             // Update Dashboard metrics
-            const currentPortfolio = totalPrincipal + totalPnL;
+            const currentPortfolio = totalPrincipal + totalPnL; // Net Total Balance
             let netReturnPercent = totalPrincipal > 0 ? (totalPnL / totalPrincipal) * 100 : 0;
 
             document.getElementById('stat-principal').textContent = formatMoney(totalPrincipal);
